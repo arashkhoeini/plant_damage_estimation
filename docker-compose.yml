@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  plant-damage-estimation:
+    build: .
+    container_name: plant_damage_dl
+    volumes:
+      # Mount dataset directory
+      - ./dataset:/app/dataset
+      # Mount saved models directory
+      - ./saved:/app/saved
+      # Mount oracle model
+      - ./oracle.pth:/app/oracle.pth
+      # Mount configs for easy modification
+      - ./configs:/app/configs
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - PYTHONPATH=/app
+    runtime: nvidia  # For NVIDIA Docker runtime
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ports:
+      - "6006:6006"  # TensorBoard port
+    command: python main.py
+
+  # Service for inference
+  plant-damage-inference:
+    build: .
+    container_name: plant_damage_inference
+    volumes:
+      - ./dataset:/app/dataset
+      - ./saved:/app/saved
+      - ./oracle.pth:/app/oracle.pth
+      - ./inference_input:/app/inference_input
+      - ./inference_output:/app/inference_output
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - PYTHONPATH=/app
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    profiles:
+      - inference
+    command: python inference.py -m /app/saved/model.pth -i /app/inference_input -o /app/inference_output -b 1
+
+  # TensorBoard service
+  tensorboard:
+    build: .
+    container_name: plant_damage_tensorboard
+    volumes:
+      - ./saved/runs:/app/saved/runs
+    ports:
+      - "6006:6006"
+    profiles:
+      - tensorboard
+    command: tensorboard --logdir=/app/saved/runs --host=0.0.0.0 --port=6006
