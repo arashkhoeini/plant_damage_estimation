@@ -1,0 +1,110 @@
+name: PlantDamageEstimation
+state: pretrain
+save_dir: saved/
+pretrained:
+data_dir: dataset
+num_classes: 3
+
+tensorboard: false
+log_dir: saved/runs
+log_per_iter: 20
+
+n_gpu: 1
+use_synch_bn: false
+
+pretrain_loader:
+  type: PlantLoader
+  args:
+    batch_size: 2
+    base_size: 400
+    crop_size: 380
+    augment: true
+    shuffle: true
+    scale: true
+    flip: true
+    rotate: true
+    blur: false
+    num_workers: 8
+    pretraining: true
+
+finetune_loader:
+  type: PlantLoader
+  args:
+    batch_size: 2
+    base_size: 400
+    crop_size: 380
+    augment: true
+    shuffle: true
+    scale: true
+    flip: true
+    rotate: true
+    blur: false
+    splits: []
+    num_workers: 8
+
+val_loader:
+  type: PlantLoader
+  args:
+    batch_size: 2
+    crop_size: 480
+    val: true
+    splits: []
+    num_workers: 4
+
+test_loader:
+  type: PlantLoader
+  args:
+    batch_size: 8
+    crop_size: 480
+    val: true
+    splits: []
+    num_workers: 4
+
+pretrain_optimizer:
+  type: SGD
+  differential_lr: true
+  args:
+    lr: 0.01
+    weight_decay: 0.00001
+    momentum: 0.9
+
+finetune_optimizer:
+  type: SGD
+  differential_lr: true
+  args:
+    lr: 0.01
+    weight_decay: 0.00001
+    momentum: 0.9
+
+ignore_index: 255
+
+pretraining:
+  epochs: 10
+  save_period: 2
+  loss: PxCL
+  lr_scheduler:
+    type: OneCycle
+    args: {}
+  monitor: max Mean_IoU
+  early_stop: 10
+  val: false
+  val_per_epochs: 5
+
+finetuning:
+  epochs: 10
+  save_period: 2
+  loss: CrossEntropyLoss2d
+  lr_scheduler:
+    type: OneCycle
+    args: {}
+  monitor: max Mean_IoU
+  early_stop: 10
+  val: true
+  val_per_epochs: 5
+
+testing:
+  cross_validation: true
+  n_folds: 5
+  current_fold: 1
+  val_data: true
+  val_ratio: 0.1
