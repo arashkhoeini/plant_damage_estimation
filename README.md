@@ -65,7 +65,7 @@ python inference.py -m path/to/model.pth -i input_directory -o output_directory 
 ## Oracle
 When using `PxCL` pre-training method to use pixel-level constrastive learning, you will need and oracle model to pseudo-label images during pre-training to avoid have false negative pairs. This oracle should be a unet of the same structure, and it could be trained using `MoCo` pre-training followed by supervised finetuning, or just supervised training on the labeled portion of the dataset. For a practical appraoch, first use `MoCo` option to fully pre-train and fune-tune a model, and then use that as your oracle. 
 
-Oracle should be stored as `oracle.pth` in the main directory of the project. [I have prepared a dummy oracle that can be downloaded from here](). Note that this oracle is random and it is only useful for test runs. 
+Oracle should be stored as `oracle.pth` in the main directory of the project. [I have prepared a dummy oracle that can be downloaded from here](https://drive.google.com/file/d/1T0nIuFWo79qss2U4JcRu-8ztL_O0HyJI/view?usp=share_link). Note that this oracle is random and it is only useful for test runs. 
 
 ## Dataset Structure
 There is a dummy dataset available in the `dataset` directory for an easy test run.
@@ -123,6 +123,7 @@ plant_damage_estimation_dl/
 ├── main.py                    # Main training script
 ├── inference.py               # Inference script
 ├── trainer.py                 # Training logic
+├── oracle.pth                 # pseudo-labeling model, necessary for PxCL
 └── requirements.txt           # Python dependencies
 ```
 
